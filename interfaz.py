@@ -1,86 +1,101 @@
-import tkinter as tk
-from tkinter import ttk
+import sys
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
-class Interfaz():
-    def panelSeleccionado(self, indice):
-        def panelesInternos(indice):
-            for panelActual1_1 in self.paneles1_1:
-                panelActual1_1.place_forget()
-            self.paneles1_1[indice].place(x = 20, y = 80, width = 630, height = 340)
-            self.textoPanel1_1 = f'Area: '
-                
-        if indice < 4:
-            for panelActual in self.paneles1:
-                panelActual.place_forget()
-            self.paneles1[indice].place(x = 150, y = 20, width = 670, height = 440)
-            self.textoPanel1 = f'Area: '
-            
-            if indice == 0:
-                self.paneles1_1 = []
-                self.nombrePanel1_1 = ['Inventario de Almacenes', 'Inventario de Sucursales', 'Productos', 'Productos Vendidos']
-                self.coloresPanel1_1 = ['red', 'lightgreen', 'lightpink']
-                for nombre1_1, color1_1 in zip(self.nombrePanel1_1, self.coloresPanel1_1):
-                    self.panel1_1 = tk.Frame(self.paneles1[indice], background = color1_1)
-                    self.panel1_1.place(x = 20, y = 80, width = 630, height = 340)
-                    self.panel1_1.place_forget()
-                    self.paneles1_1.append(self.panel1_1)
-                self.textoPanel1 += 'Inventarios'
-                
-                self.opcNombreCB = ttk.Combobox(self.paneles1[indice], values=self.nombrePanel1_1, state='readonly')
-                self.opcNombreCB.place(x = 20, y = 50)
-                self.opcNombreCB.bind("<<ComboboxSelected>>", lambda event, j=self.opcNombreCB: panelesInternos(j.current()))
-                self.opcNombreCB.current(0)
-                panelesInternos(0)
-            elif indice == 1:
-                self.paneles1_1 = []
-                self.nombrePanel1_1 = ['Panel 1_1', 'Panel 2_2', 'Panel 3_3']
-                self.coloresPanel1_1 = ['red', 'lightgreen', 'lightpink']
-                for nombre1_1, color1_1 in zip(self.nombrePanel1_1, self.coloresPanel1_1):
-                    self.panel1_1 = tk.Frame(self.paneles1[indice], background = color1_1)
-                    self.panel1_1.place(x = 20, y = 80, width = 630, height = 340)
-                    self.panel1_1.place_forget()
-                    self.paneles1_1.append(self.panel1_1)
-                self.textoPanel1 += 'Humano'
-                
-                self.opcNombreCB = ttk.Combobox(self.paneles1[indice], values=self.nombrePanel1_1, state='readonly')
-                self.opcNombreCB.place(x = 20, y = 50)
-                self.opcNombreCB.bind("<<ComboboxSelected>>", lambda event, j=self.opcNombreCB: panelesInternos(j.current()))
-                self.opcNombreCB.current(0)
-                panelesInternos(0)
-            elif indice == 2:
-                self.textoPanel1 += 'Localizaciones'
-            elif indice == 3:
-                self.textoPanel1 += 'Transacciones'
-
-            self.nombrePanel = tk.Label(self.paneles1[indice], text = f'{self.textoPanel1}',background = self.coloresPanel[indice])
-            self.nombrePanel.place(x = 20, y = 20)
-        else:
-            self.ventana.destroy()
-        
-    def contenido(self):
-        self.paneles1 = []
-        self.nombrePanel = ['Inventarios', 'Humano', 'Localizaciones','Transacciones']
-        self.coloresPanel = ['lightblue', 'lightgreen','lightpink' , 'blue']
-        for nombre, color in zip(self.nombrePanel, self.coloresPanel):
-            self.panel = tk.Frame(self.ventana, background = color)
-            self.panel.place(x = 150, y = 20, width = 670, height = 440)
-            self.panel.place_forget()
-            self.paneles1.append(self.panel)
-        global nombreBotones 
-        self.nombreBotones = ['Inventarios', 'Capital Humano', 'Localizaciones','Transacciones','Salir']
-        
-        for indice, nombre in enumerate(self.nombreBotones):
-            self.botones1 = tk.Button(self.ventana, text = nombre, width = 15,command = lambda i = indice: self.panelSeleccionado(i))
-            self.botones1.place(x = 20, y = 20 + (30 * indice))
+class appWindow(QWidget):#Clase Que Hereda QWidget
+    def __init__(self):#Constructor Base
+        super().__init__()#Herencia De La Clase QWidget
+        self.setWindowTitle('Area De Ventas')#Titulo De Ventana
+        self.setFixedSize(854,480)#Posicion De La Ventana
+        self.move((QApplication.primaryScreen().geometry().center()) - (self.frameGeometry().center()))#Centrar Ventana
+        self.contenido()#Invocar Funcion
     
-    def __init__(self):
-       self.ventana = tk.Tk()
-       self.ventana.title('Inventario')
-       self.width, self.height = 854,480
-       self.ventana.geometry(f'{self.width}x{self.height}')
-       #funciones de la interfaz
-       self.contenido()
-       #funciones de la interfaz
-       self.ventana.mainloop()
+    def contenido(self):
+        self.colorActual = None
+        self.panelesGuardados_1 = []#Lista Vacia De Paneles
+        self.panelesGuardados_2 = []#Lista Vacia De Paneles
+        
+        self.nombreBotones_1 = ['Inventarios', 'Capital Humano', 'Localizaciones','Transacciones','Salir']#Lista De Nombres De Botones
+        self.coloresBotones_1 = [QColor(200 + -(20 * (x + -1)), 200 + -(20 * (x + -1)), 200 + -(20 * (x + -1))) for x in range(len(self.nombreBotones_1))]#Lista De Colores De Botones
+        
+        for indexBoton_1, nombreBoton_1 in enumerate(self.nombreBotones_1):#Obtener Nombre Y ID De La Lista De Botones Con Enumerate
+            self.boton_1 = QPushButton(f'{nombreBoton_1}',self)#Crear Boton
+            self.boton_1.move(20,20 + (30 * indexBoton_1))#Coordenadas Del Boton
+            self.boton_1.setFixedSize(100,20)#Tamaño De Boton
+            self.colorActual = self.coloresBotones_1[indexBoton_1] if indexBoton_1 < len(self.coloresBotones_1) else QColor(0, 0, 0)#Distribucion De Colores
+            self.boton_1.setStyleSheet(f'background-color: {self.colorActual.name()}; border: 1px solid black;')#Color Y Margen
+            self.boton_1.clicked.connect(lambda _, id = indexBoton_1: self.selectPaneles1(id))#Eventos De Boton Con ID
+        
+        for nombreBoton_1, colorPanel_1 in zip(self.nombreBotones_1,self.coloresBotones_1):#
+            self.frame_1 = QFrame(self)
+            self.frame_1.setFrameShape(QFrame.StyledPanel)
+            self.frame_1.move(140,20)
+            self.frame_1.setFixedSize(690,440)
+            self.frame_1.setStyleSheet(f'background-color: {colorPanel_1.name()}; border: 1px solid black;')  # Acceder al nombre del color
+            self.frame_1.hide()
+            self.panelesGuardados_1.append(self.frame_1)
+            
+        self.nombreBotones_2 = ['Crear','Leer','Actualizar','Eliminar']#Lista De Nombres De Botones
+        self.coloresBotones_2 = [QColor(200 + -(20 * (x + -1)), 200 + -(20 * (x + -1)), 200 + -(20 * (x + -1))) for x in range(len(self.nombreBotones_2))]#Lista De Colores De Botones
+        
+        for nombreBoton_2, colorPanel_2 in zip(self.nombreBotones_2,self.coloresBotones_2):#
+            self.frame_2 = QFrame(self.panelesGuardados_1[1])
+            self.frame_2.setFrameShape(QFrame.StyledPanel)
+            self.frame_2.move(20,100)
+            self.frame_2.setFixedSize(550,320)
+            self.frame_2.setStyleSheet(f'background-color: {colorPanel_2.name()}; border: 1px solid black;')
+            self.frame_2.hide()
+            self.panelesGuardados_2.append(self.frame_2)
+            
+        self.comboBoxPanel_1 = QComboBox(self.panelesGuardados_1[1])
+        self.comboBoxPanel_1.addItems(self.nombreBotones_2)
+        self.comboBoxPanel_1.move(20, 40)
+        self.comboBoxPanel_1.setFixedSize(80, 20)
+        self.comboBoxPanel_1.currentIndexChanged.connect(self.selectPaneles2)
+        
+        self.selectPaneles2(0)
+        
+        for i in range(len(self.panelesGuardados_1)):
+            self.titulo_1 = QLabel(f'Area: {self.nombreBotones_1[i]}',self.panelesGuardados_1[i])#Crear Label
+            self.titulo_1.move(20, 20)#Posicion Del widget
+            self.titulo_1.setStyleSheet(f'border: 0px;')#Sin Bordes
+        
+        self.texto_2 = QLabel('Amdios Tonotos',self.panelesGuardados_2[1])
+        self.texto_2.move(20, 20)
+        self.texto_2.setStyleSheet(f'border: 0px;')
+        
+    def cajaMensajes(self, x):
+        if x == 1:
+            cajaMensaje_1 = QMessageBox()
+            cajaMensaje_1.setWindowTitle('Bienvenido')
+            cajaMensaje_1.setText('Ponga Aceptar Para Continuar')
+            botonMensaje_1 = QPushButton('Aceptar', cajaMensaje_1)
+            cajaMensaje_1.addButton(botonMensaje_1, QMessageBox.AcceptRole)
+            cajaMensaje_1.exec_()
+    
+    def selectPaneles1(self, id):
+        for panel in self.panelesGuardados_1:#Ciclo En Todos Los Paneles
+            panel.hide()#Oculta Los Paneles
+        if id < (len(self.panelesGuardados_1) + -1):#Si El Tamaño De La Lista Es Menor A La ID
+            panelActual = self.panelesGuardados_1[id] #Selecciona El Panel Con El ID
+            
+            panelActual.show()#Mostrar Panel Selecionado
+        else:
+            self.close()
 
-app = Interfaz()
+    def selectPaneles2(self, id):
+        for panel in self.panelesGuardados_2:#Ciclo En Todos Los Paneles
+            panel.hide()#Oculta Los Paneles
+        if id < (len(self.panelesGuardados_2)):#Si El Tamaño De La Lista Es Menor A La ID
+            panelActual = self.panelesGuardados_2[id]#Selecciona El Panel Con El ID
+            panelActual.show()#Mostrar Panel Selecionado
+        else:
+            pass
+
+app = QApplication(sys.argv)#Aplicacion PyQT
+aplicacion = appWindow()#Crear Instancia
+aplicacion.show()#Mostrar ventana
+
+aplicacion.cajaMensajes(1)#MessageBox De Ejemplo
+
+sys.exit(app.exec_())#Ejecutar la aplicación
